@@ -247,6 +247,10 @@ void sathvikDickSmall() {
   chassis.set_drive_pid(50, DRIVE_SPEED, true);
   chassis.wait_drive();
 
+  
+  intake.move_velocity(600);
+  pros::delay(1000);
+
   chassis.set_drive_pid(-24, DRIVE_SPEED, true);
   chassis.wait_drive();
 }

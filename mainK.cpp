@@ -7,187 +7,250 @@
 /////
 
 
-// Chassis constructor
-Drive chassis (
-  // Left Chassis Ports (negative port will reverse it!)
-  //   the first port is the sensored port (when trackers are not used!)
-  {-10, -20}
-
-  // Right Chassis Ports (negative port will reverse it!)
-  //   the first port is the sensored port (when trackers are not used!)
-  ,{1, 11}
-
-  // IMU Port
-  ,21
-
-  // Wheel Diameter (Remember, 4" wheels are actually 4.125!)
-  //    (or tracking wheel diameter)
-  ,3.25
-
-  // Cartridge RPM
-  //   (or tick per rotation if using tracking wheels)
-  ,600
-
-  // External Gear Ratio (MUST BE DECIMAL)
-  //    (or gear ratio of tracking wheel)
-  // eg. if your drive is 84:36 where the 36t is powered, your RATIO would be 2.333.
-  // eg. if your drive is 36:60 where the 60t is powered, your RATIO would be 0.6.
-  ,0.6
-
-  // Uncomment if using tracking wheels
-  /*
-  // Left Tracking Wheel Ports (negative port will reverse it!)
-  // ,{1, 2} // 3 wire encoder
-  // ,8 // Rotation sensor
-
-  // Right Tracking Wheel Ports (negative port will reverse it!)
-  // ,{-3, -4} // 3 wire encoder
-  // ,-9 // Rotation sensor
-  */
-
-  // Uncomment if tracking wheels are plugged into a 3 wire expander
-  // 3 Wire Port Expander Smart Port
-  // ,1
-);
+const int DRIVE_SPEED = 110; // This is 110/127 (around 87% of max speed).  We don't suggest making this 127.
+                             // If this is 127 and the robot tries to heading correct, it's only correcting by
+                             // making one side slower.  When this is 87%, it's correcting by making one side
+                             // faster and one side slower, giving better heading correction.
+const int TURN_SPEED  = 90;
+const int SWING_SPEED = 90;
 
 
 
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
-void initialize() {
-  // Print our branding over your terminal :D
-  ez::print_ez_template();
-  
-  pros::delay(500); // Stop the user from doing anything while legacy ports configure.
+///
+// Constants
+///
 
-  // Configure your chassis controls
-  chassis.toggle_modify_curve_with_controller(true); // Enables modifying the controller curve with buttons on the joysticks
-  chassis.set_active_brake(0.1); // Sets the active brake kP. We recommend 0.1.
-  chassis.set_curve_default(0, 0); // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)  
-  default_constants(); // Set the drive to your own constants from autons.cpp!
-  exit_condition_defaults(); // Set the exit conditions to your own constants from autons.cpp!
+// It's best practice to tune constants when the robot is empty and with heavier game objects, or with lifts up vs down.
+// If the objects are light or the cog doesn't change much, then there isn't a concern here.
 
-  // These are already defaulted to these buttons, but you can change the left/right curve buttons here!
-  // chassis.set_left_curve_buttons (pros::E_CONTROLLER_DIGITAL_LEFT, pros::E_CONTROLLER_DIGITAL_RIGHT); // If using tank, only the left side is used. 
-  // chassis.set_right_curve_buttons(pros::E_CONTROLLER_DIGITAL_Y,    pros::E_CONTROLLER_DIGITAL_A);
+void default_constants() {
+  chassis.set_slew_min_power(80, 80);
+  chassis.set_slew_distance(7, 7);
+  chassis.set_pid_constants(&chassis.headingPID, 11, 0, 20, 0);
+  chassis.set_pid_constants(&chassis.forward_drivePID, 0.45, 0, 5, 0);
+  chassis.set_pid_constants(&chassis.backward_drivePID, 0.45, 0, 5, 0);
+  chassis.set_pid_constants(&chassis.turnPID, 5, 0.003, 35, 15);
+  chassis.set_pid_constants(&chassis.swingPID, 7, 0, 45, 0);
+}
 
-  // Autonomous Selector using LLEMU
-  ez::as::auton_selector.add_autons({
-    // Auton("Example Drive\n\nDrive forward and come back.", test),
-    // Auton("Example Turn\n\nTurn 3 times.", turn_example),
-    // Auton("Drive and Turn\n\nDrive forward, turn, come back. ", drive_and_turn),
-    // Auton("Drive and Turn\n\nSlow down during drive.", wait_until_change_speed),
-    // Auton("Swing Example\n\nSwing, drive, swing.", swing_example),
-    // Auton("Combine all 3 movements", combining_movements),
-    // Auton("Interference\n\nAfter driving forward, robot performs differently if interfered or not.", interfered_example),
-    Auton("Is that a tic tac", sathvikDickSmall),
-  });
+void one_mogo_constants() {
+  chassis.set_slew_min_power(80, 80);
+  chassis.set_slew_distance(7, 7);
+  chassis.set_pid_constants(&chassis.headingPID, 11, 0, 20, 0);
+  chassis.set_pid_constants(&chassis.forward_drivePID, 0.45, 0, 5, 0);
+  chassis.set_pid_constants(&chassis.backward_drivePID, 0.45, 0, 5, 0);
+  chassis.set_pid_constants(&chassis.turnPID, 5, 0.003, 35, 15);
+  chassis.set_pid_constants(&chassis.swingPID, 7, 0, 45, 0);
+}
 
-  // Initialize chassis and auton selector
-  chassis.initialize();
-  ez::as::initialize();
+void two_mogo_constants() {
+  chassis.set_slew_min_power(80, 80);
+  chassis.set_slew_distance(7, 7);
+  chassis.set_pid_constants(&chassis.headingPID, 11, 0, 20, 0);
+  chassis.set_pid_constants(&chassis.forward_drivePID, 0.45, 0, 5, 0);
+  chassis.set_pid_constants(&chassis.backward_drivePID, 0.45, 0, 5, 0);
+  chassis.set_pid_constants(&chassis.turnPID, 5, 0.003, 35, 15);
+  chassis.set_pid_constants(&chassis.swingPID, 7, 0, 45, 0);
+}
+
+void exit_condition_defaults() {
+  chassis.set_exit_condition(chassis.turn_exit, 100, 3, 500, 7, 500, 500);
+  chassis.set_exit_condition(chassis.swing_exit, 100, 3, 500, 7, 500, 500);
+  chassis.set_exit_condition(chassis.drive_exit, 80, 50, 300, 150, 500, 500);
+}
+
+void modified_exit_condition() {
+  chassis.set_exit_condition(chassis.turn_exit, 100, 3, 500, 7, 500, 500);
+  chassis.set_exit_condition(chassis.swing_exit, 100, 3, 500, 7, 500, 500);
+  chassis.set_exit_condition(chassis.drive_exit, 80, 50, 300, 150, 500, 500);
 }
 
 
 
-/**
- * Runs while the robot is in the disabled state of Field Management System or
- * the VEX Competition Switch, following either autonomous or opcontrol. When
- * the robot is enabled, this task will exit.
- */
-void disabled() {
-  // . . .
+///
+// Drive Example
+///
+void drive_example() {
+  // The first parameter is target inches
+  // The second parameter is max speed the robot will drive at
+  // The third parameter is a boolean (true or false) for enabling/disabling a slew at the start of drive motions
+  // for slew, only enable it when the drive distance is greater then the slew distance + a few inches
+
+
+  chassis.set_drive_pid(24, DRIVE_SPEED, true);
+  chassis.wait_drive();
+
+  chassis.set_drive_pid(-12, DRIVE_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_drive_pid(-12, DRIVE_SPEED);
+  chassis.wait_drive();
 }
 
 
 
-/**
- * Runs after initialize(), and before autonomous when connected to the Field
- * Management System or the VEX Competition Switch. This is intended for
- * competition-specific initialization routines, such as an autonomous selector
- * on the LCD.
- *
- * This task will exit when the robot is enabled and autonomous or opcontrol
- * starts.
- */
-void competition_initialize() {
-  // . . .
+///
+// Turn Example
+///
+void turn_example() {
+  // The first parameter is target degrees
+  // The second parameter is max speed the robot will drive at
+
+
+  chassis.set_turn_pid(90, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(45, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(0, TURN_SPEED);
+  chassis.wait_drive();
 }
 
 
 
-/**
- * Runs the user autonomous code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the autonomous
- * mode. Alternatively, this function may be called in initialize or opcontrol
- * for non-competition testing purposes.
- *
- * If the robot is disabled or communications is lost, the autonomous task
- * will be stopped. Re-enabling the robot will restart the task, not re-start it
- * from where it left off.
- */
-void autonomous() {
-  chassis.reset_pid_targets(); // Resets PID targets to 0
-  chassis.reset_gyro(); // Reset gyro position to 0
-  chassis.reset_drive_sensor(); // Reset drive sensors to 0
-  chassis.set_drive_brake(MOTOR_BRAKE_HOLD); // Set motors to hold.  This helps autonomous consistency.
+///
+// Combining Turn + Drive
+///
+void drive_and_turn() {
+  chassis.set_drive_pid(24, DRIVE_SPEED, true);
+  chassis.wait_drive();
 
-  ez::as::auton_selector.call_selected_auton(); // Calls selected auton from autonomous selector.
+  chassis.set_turn_pid(45, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(-45, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(0, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_drive_pid(-24, DRIVE_SPEED, true);
+  chassis.wait_drive();
 }
 
 
 
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
-void opcontrol() {
-  // This is preference to what you like to drive on.
-  chassis.set_drive_brake(MOTOR_BRAKE_COAST);
-  pros::Motor intake (19, true);
-  pros::Motor shooting (9, true);
-  pros::ADIDigitalIn limit (3);
-  pros::Controller controller (CONTROLLER_MASTER);
+///
+// Wait Until and Changing Max Speed
+///
+void wait_until_change_speed() {
+  // wait_until will wait until the robot gets to a desired position
 
-  while (true) {
 
-    // chassis.tank(); // Tank control
-    chassis.arcade_standard(ez::SPLIT); // Standard split arcade
-    // chassis.arcade_standard(ez::SINGLE); // Standard single arcade
-    // chassis.arcade_flipped(ez::SPLIT); // Flipped split arcade
-    // chassis.arcade_flipped(ez::SINGLE); // Flipped single arcade
+  // When the robot gets to 6 inches, the robot will travel the remaining distance at a max speed of 40
+  chassis.set_drive_pid(24, DRIVE_SPEED, true);
+  chassis.wait_until(6);
+  chassis.set_max_speed(40); // After driving 6 inches at DRIVE_SPEED, the robot will go the remaining distance at 40 speed
+  chassis.wait_drive();
 
-    // . . .
-    // Put more user control code here!
-    // . . .
-    //INTAKE
-    if (controller.get_digital(DIGITAL_L1)){
-      intake.move_velocity(-600); //intake
-    } 
-    if (controller.get_digital(DIGITAL_L2)){
-      intake.move_velocity(600); //outtake
+  chassis.set_turn_pid(45, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(-45, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(0, TURN_SPEED);
+  chassis.wait_drive();
+
+  // When the robot gets to -6 inches, the robot will travel the remaining distance at a max speed of 40
+  chassis.set_drive_pid(-24, DRIVE_SPEED, true);
+  chassis.wait_until(-6);
+  chassis.set_max_speed(40); // After driving 6 inches at DRIVE_SPEED, the robot will go the remaining distance at 40 speed
+  chassis.wait_drive();
+}
+
+
+
+///
+// Swing Example
+///
+void swing_example() {
+  // The first parameter is ez::LEFT_SWING or ez::RIGHT_SWING
+  // The second parameter is target degrees
+  // The third parameter is speed of the moving side of the drive
+
+
+  chassis.set_swing_pid(ez::LEFT_SWING, 45, SWING_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_drive_pid(24, DRIVE_SPEED, true);
+  chassis.wait_until(12);
+
+  chassis.set_swing_pid(ez::RIGHT_SWING, 0, SWING_SPEED);
+  chassis.wait_drive();
+}
+
+
+
+///
+// Auto that tests everything
+///
+void combining_movements() {
+  chassis.set_drive_pid(24, DRIVE_SPEED, true);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(45, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_swing_pid(ez::RIGHT_SWING, -45, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(0, TURN_SPEED);
+  chassis.wait_drive();
+
+  chassis.set_drive_pid(-24, DRIVE_SPEED, true);
+  chassis.wait_drive();
+}
+
+
+
+///
+// Interference example
+///
+void tug (int attempts) {
+  for (int i=0; i<attempts-1; i++) {
+    // Attempt to drive backwards
+    printf("i - %i", i);
+    chassis.set_drive_pid(-12, 127);
+    chassis.wait_drive();
+
+    // If failsafed...
+    if (chassis.interfered) {
+      chassis.reset_drive_sensor();
+      chassis.set_drive_pid(-2, 20);
+      pros::delay(1000);
     }
-    //SHOOTING
-    if (controller.get_digital(DIGITAL_R2)){
-      shooting.move_velocity(-100);
-    } else if (controller.get_digital(DIGITAL_R1)) {
-      shooting.move_velocity(0);
+    // If robot successfully drove back, return
+    else {
+      return;
     }
-
-    pros::delay(ez::util::DELAY_TIME); // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }
 }
+
+// If there is no interference, robot will drive forward and turn 90 degrees. 
+// If interfered, robot will drive forward and then attempt to drive backwards. 
+void interfered_example() {
+ chassis.set_drive_pid(24, DRIVE_SPEED, true);
+ chassis.wait_drive();
+
+ if (chassis.interfered) {
+   tug(3);
+   return;
+ }
+
+ chassis.set_turn_pid(90, TURN_SPEED);
+ chassis.wait_drive();
+}
+
+void sathvikDickSmall() {
+  chassis.set_drive_pid(50, DRIVE_SPEED, true);
+  chassis.wait_drive();
+
+  chassis.set_drive_pid(-24, DRIVE_SPEED, true);
+  chassis.wait_drive();
+}
+
+// . . .
+// Make your own autonomous functions here!
+// . . .

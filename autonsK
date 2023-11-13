@@ -22,6 +22,13 @@ const int SWING_SPEED = 90;
 
 // It's best practice to tune constants when the robot is empty and with heavier game objects, or with lifts up vs down.
 // If the objects are light or the cog doesn't change much, then there isn't a concern here.
+  
+  
+  pros::Motor intake (19, true);
+  pros::Motor shooting (9, true);
+  pros::ADIDigitalIn limit (3);
+  pros::Controller controller (CONTROLLER_MASTER);
+
 
 void default_constants() {
   chassis.set_slew_min_power(80, 80);
@@ -244,15 +251,23 @@ void interfered_example() {
 }
 
 void sathvikDickSmall() {
-  chassis.set_drive_pid(50, DRIVE_SPEED, true);
+  chassis.set_drive_pid(-10, DRIVE_SPEED, true);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(40, TURN_SPEED);
   chassis.wait_drive();
 
   
-  intake.move_velocity(600);
-  pros::delay(1000);
+   chassis.set_drive_pid(-120, DRIVE_SPEED, true);
+  //  intake.move_velocity(600);
+  //  pros::delay(10000);
+  //  intake.move_velocity(0);
 
-  chassis.set_drive_pid(-24, DRIVE_SPEED, true);
-  chassis.wait_drive();
+  // chassis.set_turn_pid(45,TURN_SPEED);
+  
+
+  // chassis.set_drive_pid(-24, DRIVE_SPEED, true);
+  // chassis.wait_drive();
 }
 
 // . . .

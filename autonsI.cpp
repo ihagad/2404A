@@ -16,6 +16,8 @@ const int SWING_SPEED = 90;
 
 
 
+
+
 ///
 // Constants
 ///
@@ -257,6 +259,91 @@ void getAGripBestie(){
 
   chassis.set_drive_pid(-24, TURN_SPEED, true);
   chassis.wait_drive();
+}
+
+void singleMotorTest(){
+
+  pros::Motor intake (19, true);
+  pros::Motor shooting (9, true);
+  
+  //forward
+  chassis.set_drive_pid(24, DRIVE_SPEED, true);
+  chassis.wait_drive();
+
+  //backward
+  chassis.set_drive_pid(-24, TURN_SPEED, true);
+  chassis.wait_drive();
+
+  //right
+  chassis.set_turn_pid(90, TURN_SPEED);
+  chassis.wait_drive();
+
+  //left
+  chassis.set_turn_pid(-90, TURN_SPEED);
+  chassis.wait_drive();
+
+  //intake
+  intake.move_velocity(600);
+  pros::delay(8000);
+  intake.move_velocity(0);
+  pros::delay(8000);
+
+  //outake
+  intake.move_velocity(-600);
+  pros::delay(8000);
+  intake.move_velocity(0);
+  pros::delay(8000);
+
+  //shooting
+  shooting.move_velocity(-600);
+  pros::delay(8000);
+  shooting.move_velocity(0);
+}
+
+void blueGoalLeftCorner(){
+
+  //Declaring other motors
+  pros::Motor intake (19, true);
+  pros::Motor shooting (9, true);
+
+  //Preload into goal
+  chassis.set_drive_pid(-94, DRIVE_SPEED, true);
+  chassis.wait_drive();
+  chassis.set_drive_pid(30, DRIVE_SPEED, true);
+  chassis.wait_drive();
+  chassis.set_turn_pid(90, TURN_SPEED);
+  chassis.wait_drive();
+  chassis.set_drive_pid(120, DRIVE_SPEED, true);
+  chassis.wait_drive();
+  intake.move_velocity(-600);
+  pros::delay(1000);
+  intake.move_velocity(0);
+  chassis.set_turn_pid(-75, TURN_SPEED);
+  chassis.wait_drive();
+  //chassis.set_drive_pid(100, DRIVE_SPEED, true);
+  // chassis.set_drive_pid(20, DRIVE_SPEED, true);
+  // chassis.wait_drive();
+
+  // //Getting one more triball
+  // chassis.set_turn_pid(45, TURN_SPEED);
+  // chassis.wait_drive();
+  // chassis.set_drive_pid(50, DRIVE_SPEED, true);
+  // chassis.wait_drive();
+  // chassis.set_turn_pid(53, TURN_SPEED);
+  // chassis.wait_drive();
+  // intake.move_velocity(-600);
+  // chassis.set_drive_pid(100, DRIVE_SPEED, true);
+  // chassis.wait_drive();
+
+  // //Driving & Scoring Triball
+  // chassis.set_turn_pid(-150, TURN_SPEED);
+  // chassis.wait_drive();
+  // chassis.set_drive_pid(100, DRIVE_SPEED, true);
+  // chassis.wait_drive();
+  // intake.move_velocity(600);
+
+
+
 }
 
 

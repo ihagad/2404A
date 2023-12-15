@@ -7,18 +7,25 @@
 /////
 
 
+//1 for defense
+//2 for offense
+//3 skills
+
+//red side - offense 
+//blue side - defense(match loading)
+
 // Chassis constructor
 Drive chassis (
   // Left Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
-  {-10, -20}
+  {-12, -16, -15}
 
   // Right Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
-  ,{1, 11}
+  ,{17, 19, 18}
 
   // IMU Port
-  ,21
+  ,20
 
   // Wheel Diameter (Remember, 4" wheels are actually 4.125!)
   //    (or tracking wheel diameter)
@@ -77,14 +84,9 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.add_autons({
-    // Auton("Example Drive\n\nDrive forward and come back.", test),
-    // Auton("Example Turn\n\nTurn 3 times.", turn_example),
-    // Auton("Drive and Turn\n\nDrive forward, turn, come back. ", drive_and_turn),
-    // Auton("Drive and Turn\n\nSlow down during drive.", wait_until_change_speed),
-    // Auton("Swing Example\n\nSwing, drive, swing.", swing_example),
-    // Auton("Combine all 3 movements", combining_movements),
-    // Auton("Interference\n\nAfter driving forward, robot performs differently if interfered or not.", interfered_example),
-    Auton("Momo is adorable", getAGripBestie),
+    //Auton("Testing",singleMotorTest),
+    Auton("hahah", trial),
+    //Auton("Insert Faraz here", defense1)
   });
 
   // Initialize chassis and auton selector
@@ -117,7 +119,6 @@ void disabled() {
 void competition_initialize() {
   // . . .
 }
-
 
 
 /**
@@ -157,11 +158,13 @@ void autonomous() {
  */
 void opcontrol() {
   // This is preference to what you like to drive on.
-  chassis.set_drive_brake(MOTOR_BRAKE_COAST);
-  pros::Motor intake (19, true);
-  pros::Motor shooting (9, true);
+  //chassis.set_drive_brake(MOTOR_BRAKE_COAST);
+  pros::Motor intake (4, true);
+  pros::Motor shooting (1, true);
   pros::ADIDigitalIn limit (3);
   pros::Controller controller (CONTROLLER_MASTER);
+  pros::ADIDigitalOut pistonA ('A');
+  pros::ADIDigitalOut pistonB ('B');
 
   while (true) {
 
@@ -170,11 +173,10 @@ void opcontrol() {
     // chassis.arcade_standard(ez::SINGLE); // Standard single arcade
     // chassis.arcade_flipped(ez::SPLIT); // Flipped split arcade
     // chassis.arcade_flipped(ez::SINGLE); // Flipped single arcade
-
-    // . . .
     // Put more user control code here!
     // . . .
     //INTAKE
+    chassis.set_max_speed(100);
     if (controller.get_digital(DIGITAL_L1)){
       intake.move_velocity(-600); //intake
     } 

@@ -111,15 +111,21 @@ void singleMotorTest(){
 }
 
 void offence1(){
-  // //put in preload
-  // chassis.set_turn_pid(45, TURN_SPEED);
-  // chassis.set_drive_pid(30, DRIVE_SPEED, true);
+  //put in preload
+  chassis.set_turn_pid(-45, TURN_SPEED);
+  chassis.set_drive_pid(-150, DRIVE_SPEED, true);
+  chassis.set_drive_pid(10, DRIVE_SPEED, true);
 
-  // //take out corner triball
-  // chassis.set_turn_pid(180);
-  // piston1.set_value(true);
-  // chassis.set_drive_pid(-10, DRIVE_SPEED, true);
-  // chassis.set_turn_pid();
+  //take out corner triball
+  chassis.set_turn_pid(45, TURN_SPEED);
+  chassis.set_drive_pid(-30,DRIVE_SPEED,true);
+  chassis.set_turn_pid(-45,TURN_SPEED);
+
+
+  chassis.set_turn_pid(180,TURN_SPEED);
+  piston1.set_value(true);
+  chassis.set_drive_pid(-10, DRIVE_SPEED, true);
+  chassis.set_turn_pid(120, TURN_SPEED);
 }
 
 void trial(){
@@ -127,7 +133,13 @@ void trial(){
 }
 
 void defense1(){
-  chassis.set_drive_pid(-24, DRIVE_SPEED, true);
-  chassis.set_drive_pid(-48, DRIVE_SPEED, true);
-  chassis.set_drive_pid(24, DRIVE_SPEED, true);
+  chassis.set_drive_pid(150, DRIVE_SPEED, true);
+  intake.move(-127);
+  chassis.set_drive_pid(-250, DRIVE_SPEED, true);
+
+  chassis.set_turn_pid(135,TURN_SPEED);
+  piston1.set_value(true);
+  piston2.set_value(true);
+
+  
 }

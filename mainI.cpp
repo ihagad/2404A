@@ -159,12 +159,19 @@ void autonomous() {
 void opcontrol() {
   // This is preference to what you like to drive on.
   //chassis.set_drive_brake(MOTOR_BRAKE_COAST);
-  pros::Motor intake (4, true);
-  pros::Motor shooting (1, true);
-  pros::ADIDigitalIn limit (3);
+  pros::Motor intake (13, true);
+  pros::Motor shooting (11, true);
+  pros::ADIDigitalIn limit (20);
   pros::Controller controller (CONTROLLER_MASTER);
-  pros::ADIDigitalOut pistonA ('A');
-  pros::ADIDigitalOut pistonB ('B');
+  pros::ADIDigitalOut pistonR ('C');
+  pros::ADIDigitalOut pistonL ('B');
+  pros::ADIDigitalOut elevation ('A');
+  pros::ADIDigitalOut blocker ('D');
+
+  bool pressed = false;
+  int num = 1;
+
+  int time = pros::millis();
 
   while (true) {
 
@@ -178,17 +185,44 @@ void opcontrol() {
     //INTAKE
     chassis.set_max_speed(100);
     if (controller.get_digital(DIGITAL_L1)){
-      intake.move_velocity(-600); //intake
+      intake.move(127); //outtake
     } 
     if (controller.get_digital(DIGITAL_L2)){
-      intake.move_velocity(600); //outtake
+      intake.move(-127); //intake
+    }
+    if(controller. get_digital(DIGITAL_B)){
+      intake.move(0);
     }
     //SHOOTING
     if (controller.get_digital(DIGITAL_R2)){
-      shooting.move_velocity(-100);
+      shooting.move(-100);
     } else if (controller.get_digital(DIGITAL_R1)) {
-      shooting.move_velocity(0);
+      shooting.move(0);
     }
+  
+    //FLAPPER
+    if(controller.get_digital(DIGITAL_UP)){
+      pistonR.set_value(true);
+      pistonL.set_value(true);
+    }
+    if(controller.get_digital(DIGITAL_DOWN)){
+      pistonR.set_value(false);
+      pistonL.set_value(false);
+    }
+    //ELEVATION
+      if(controller.get_digital(DIGITAL_A)){
+        if(time > 90000){
+      elevation.set_value(true);
+      }
+    }
+
+    //BLOCKER
+    if(controller.get_digital(DIGITAL_RIGHT)){
+      blocker.set_value(true);
+      }
+    if(controller.get_digital(DIGITAL_LEFT)){
+      blocker.set_value(false);
+      }
 
     pros::delay(ez::util::DELAY_TIME); // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }

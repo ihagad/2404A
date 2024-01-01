@@ -1,5 +1,4 @@
 #include "main.h"
-#include "thread"
 
 
 /////
@@ -16,6 +15,15 @@ const int TURN_SPEED  = 90;
 const int SWING_SPEED = 90;
 
 
+  //pros::Motor intake (4, true);
+  pros::Motor intake (13, true);
+  pros::Motor shooting (11, true);
+  pros::ADIDigitalIn limit (20);
+  pros::Controller controller (CONTROLLER_MASTER);
+  pros::ADIDigitalOut pistonR ('C');
+  pros::ADIDigitalOut pistonL ('B');
+  pros::ADIDigitalOut elevation ('A');
+  pros::ADIDigitalOut blocker ('D');
 
 ///
 // Constants
@@ -23,15 +31,6 @@ const int SWING_SPEED = 90;
 
 // It's best practice to tune constants when the robot is empty and with heavier game objects, or with lifts up vs down.
 // If the objects are light or the cog doesn't change much, then there isn't a concern here.
-  
-  
-  pros::Motor intake (19, true);
-  pros::Motor shooting (9, true);
-  pros::ADIDigitalIn limit (3);
-  pros::Controller controller (CONTROLLER_MASTER);
-  pros::ADIDigitalOut piston1 ('A');
-  pros::ADIDigitalOut piston2 ('B');
-
 
 void default_constants() {
   chassis.set_slew_min_power(80, 80);
@@ -41,6 +40,11 @@ void default_constants() {
   chassis.set_pid_constants(&chassis.backward_drivePID, 0.45, 0, 5, 0);
   chassis.set_pid_constants(&chassis.turnPID, 5, 0.003, 35, 15);
   chassis.set_pid_constants(&chassis.swingPID, 7, 0, 45, 0);
+
+  // chassis.set_pid_constants(&chassis.forward_drivePID, 0.75, 0.0, 1, 10);
+  // chassis.set_pid_constants(&chassis.backward_drivePID, 0.75, 0.0, 1, 10);
+  // chassis.set_pid_constants(&chassis.turnPID, 2.9, 0.5, 2, 10);
+  // chassis.set_pid_constants(&chassis.swingPID, 1.75, 0, 1, 10);
 }
 
 void one_mogo_constants() {
@@ -76,188 +80,8 @@ void modified_exit_condition() {
 }
 
 
-
-///
-// Drive Example
-///
-void drive_example() {
-  // The first parameter is target inches
-  // The second parameter is max speed the robot will drive at
-  // The third parameter is a boolean (true or false) for enabling/disabling a slew at the start of drive motions
-  // for slew, only enable it when the drive distance is greater then the slew distance + a few inches
-
-
-  chassis.set_drive_pid(-30, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  // chassis.set_drive_pid(-12, DRIVE_SPEED);
-  // chassis.wait_drive();
-
-  // chassis.set_drive_pid(-12, DRIVE_SPEED);
-  // chassis.wait_drive();
-}
-
-
-
-///
-// Turn Example
-///
-void turn_example() {
-  // The first parameter is target degrees
-  // The second parameter is max speed the robot will drive at
-
-
-  chassis.set_turn_pid(90, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(45, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(0, TURN_SPEED);
-  chassis.wait_drive();
-}
-
-
-
-///
-// Combining Turn + Drive
-///
-void drive_and_turn() {
-  chassis.set_drive_pid(24, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(45, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(-45, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(0, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(-24, DRIVE_SPEED, true);
-  chassis.wait_drive();
-}
-
-
-
-///
-// Wait Until and Changing Max Speed
-///
-void wait_until_change_speed() {
-  // wait_until will wait until the robot gets to a desired position
-
-
-  // When the robot gets to 6 inches, the robot will travel the remaining distance at a max speed of 40
-  chassis.set_drive_pid(24, DRIVE_SPEED, true);
-  chassis.wait_until(6);
-  chassis.set_max_speed(40); // After driving 6 inches at DRIVE_SPEED, the robot will go the remaining distance at 40 speed
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(45, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(-45, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(0, TURN_SPEED);
-  chassis.wait_drive();
-
-  // When the robot gets to -6 inches, the robot will travel the remaining distance at a max speed of 40
-  chassis.set_drive_pid(-24, DRIVE_SPEED, true);
-  chassis.wait_until(-6);
-  chassis.set_max_speed(40); // After driving 6 inches at DRIVE_SPEED, the robot will go the remaining distance at 40 speed
-  chassis.wait_drive();
-}
-
-
-
-///
-// Swing Example
-///
-void swing_example() {
-  // The first parameter is ez::LEFT_SWING or ez::RIGHT_SWING
-  // The second parameter is target degrees
-  // The third parameter is speed of the moving side of the drive
-
-
-  chassis.set_swing_pid(ez::LEFT_SWING, 45, SWING_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(24, DRIVE_SPEED, true);
-  chassis.wait_until(12);
-
-  chassis.set_swing_pid(ez::RIGHT_SWING, 0, SWING_SPEED);
-  chassis.wait_drive();
-}
-
-
-
-///
-// Auto that tests everything
-///
-void combining_movements() {
-  chassis.set_drive_pid(24, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(45, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_swing_pid(ez::RIGHT_SWING, -45, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(0, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(-24, DRIVE_SPEED, true);
-  chassis.wait_drive();
-}
-
-
-
-///
-// Interference example
-///
-void tug (int attempts) {
-  for (int i=0; i<attempts-1; i++) {
-    // Attempt to drive backwards
-    printf("i - %i", i);
-    chassis.set_drive_pid(-12, 127);
-    chassis.wait_drive();
-
-    // If failsafed...
-    if (chassis.interfered) {
-      chassis.reset_drive_sensor();
-      chassis.set_drive_pid(-2, 20);
-      pros::delay(1000);
-    }
-    // If robot successfully drove back, return
-    else {
-      return;
-    }
-  }
-}
-
-// If there is no interference, robot will drive forward and turn 90 degrees. 
-// If interfered, robot will drive forward and then attempt to drive backwards. 
-void interfered_example() {
- chassis.set_drive_pid(24, DRIVE_SPEED, true);
- chassis.wait_drive();
-
- if (chassis.interfered) {
-   tug(3);
-   return;
- }
-
- chassis.set_turn_pid(90, TURN_SPEED);
- chassis.wait_drive();
-}
-
-
-
-
 void singleMotorTest(){
-
+  
   //forward
   chassis.set_drive_pid(24, DRIVE_SPEED, true);
   chassis.wait_drive();
@@ -292,344 +116,206 @@ void singleMotorTest(){
   shooting.move_velocity(0);
 }
 
+void trial(){
+  // chassis.set_turn_pid(-30, TURN_SPEED);
+  // chassis.wait_drive();
+  chassis.set_drive_pid(100, DRIVE_SPEED, true);
+  chassis.wait_drive();
+}
+
 void defense1(){
-  //start diagonally
-
-  //Preload into goal
-  chassis.set_drive_pid(-100, DRIVE_SPEED+10, true);
+  // //put in preload
+  chassis.set_turn_pid(-30, TURN_SPEED);
   chassis.wait_drive();
-  chassis.set_drive_pid(30, DRIVE_SPEED, true);
+  chassis.set_drive_pid(-95, DRIVE_SPEED, true);
   chassis.wait_drive();
-  chassis.set_turn_pid(88, TURN_SPEED);
+  chassis.set_turn_pid(0, TURN_SPEED);
   chassis.wait_drive();
-  chassis.set_drive_pid(124, DRIVE_SPEED, true);
-  intake.move_velocity(-600);
-  pros::delay(1600);
-  intake.move_velocity(0);
-  chassis.set_turn_pid(204, TURN_SPEED);
+  chassis.set_drive_pid(37, DRIVE_SPEED, true);
   chassis.wait_drive();
-  piston1.set_value(true);
-  piston2.set_value(true);
-  chassis.set_drive_pid(87, DRIVE_SPEED - 30, true);
+  //take out corner triball
+  chassis.set_turn_pid(-45, TURN_SPEED);
   chassis.wait_drive();
-  chassis.set_turn_pid(253, TURN_SPEED-40);
+  pistonR.set_value(true);
   chassis.wait_drive();
-  chassis.set_drive_pid(14, DRIVE_SPEED , true);
+  chassis.set_drive_pid(40, DRIVE_SPEED, true);
   chassis.wait_drive();
-
-  intake.move_velocity(600);
-  pros::delay(600);
-  intake.move_velocity(0);
-
-  chassis.set_drive_pid(-50, DRIVE_SPEED - 30, true);
+  chassis.set_turn_pid(-90, TURN_SPEED);
   chassis.wait_drive();
-
-  piston1.set_value(false);
-  piston2.set_value(false);
-
-  chassis.set_turn_pid(60, TURN_SPEED);
-  chassis. wait_drive();
-
-  piston1.set_value(true);
-  piston2.set_value(true);
-
-  chassis.set_drive_pid(-85, DRIVE_SPEED + 17, true);
+  pistonR.set_value(false);
+  chassis.set_drive_pid(110, DRIVE_SPEED, true);
   chassis.wait_drive();
-}
-
-  void defense2(){
-    chassis.set_drive_pid(-110, DRIVE_SPEED, true);
-    chassis.wait_drive();
-    chassis.set_turn_pid(10, TURN_SPEED);
-    chassis.wait_drive();
-    chassis.set_drive_pid(87, DRIVE_SPEED, true);
-    chassis.wait_drive();
-    chassis.set_turn_pid(62, TURN_SPEED);
-    chassis.wait_drive();
-    chassis.set_drive_pid(85, DRIVE_SPEED-10, false);
-    chassis.wait_drive();
-    chassis.set_turn_pid(-25, TURN_SPEED);
-    chassis.wait_drive();
-    piston1.set_value(true);
-    piston2.set_value(true); 
-    chassis.set_drive_pid(-10, DRIVE_SPEED, true);
-    chassis.wait_drive();
-       // // chassis.set_drive_pid(25, DRIVE_SPEED-80, true);
-    // // chassis.wait_drive();
-    // intake.move(-127);
-    // pros::delay(2000);
-    // intake.move(0);
-    // chassis.wait_drive();
-    // chassis.set_drive_pid(-100, DRIVE_SPEED, false);
-    // // intake.move(-127);
-    // // pros::delay(2000);
-    // // intake.move(0);
-    // chassis.wait_drive();
-    // chassis.set_turn_pid(185, TURN_SPEED);
-    // chassis.wait_drive();
-    // chassis.set_drive_pid(75, DRIVE_SPEED+17, true);
-    // chassis.wait_drive();
-    // intake.move(50);
-    // pros::delay(1000);
-    // intake.move(0);
-    // chassis.set_drive_pid(-60, DRIVE_SPEED, true);
-    // chassis.wait_drive();
-    // chassis.set_drive_pid(90, DRIVE_SPEED, true);
-    // chassis.wait_drive();
-    // chassis.set_drive_pid(-90, DRIVE_SPEED, true);
-    // chassis.wait_drive();
-    // chassis.set_turn_pid(65, TURN_SPEED);
-    // chassis.wait_drive();
-    // // chassis.set_drive_pid(65, DRIVE_SPEED+17, true);
-    // // chassis.wait_drive();
-  }
-
-  void defense3(){
-  chassis.set_drive_pid(-104, DRIVE_SPEED + 10, true);
-  chassis.wait_drive();
-  chassis.set_drive_pid(35, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  chassis.set_turn_pid(83, TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(107, DRIVE_SPEED, true);
-  intake.move_velocity(-100);
-  pros::delay(1600);
-  intake.move_velocity(0);
-  chassis.set_turn_pid(-135, TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(77.5, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  // chassis.set_turn_pid(-232,TURN_SPEED);
+  // pistonR.set_value(false);
   // chassis.wait_drive();
-  // chassis.set_drive_pid(70, DRIVE_SPEED, true);
+  // chassis.set_turn_pid(290, TURN_SPEED);
   // chassis.wait_drive();
-  intake.move(100);
-  pros::delay(1600);
-  intake.move(0);
-  //chassis.set_drive_pid(-, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  chassis.set_turn_pid(-102,TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(60, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  }
-
-  void offence1(){
-  //start diagonal with triball in
-
-  //push triballs
-  piston1.set_value(true);
-  piston2.set_value(true);
-  chassis.set_drive_pid(-180, DRIVE_SPEED+17, true);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(15, DRIVE_SPEED+17, true);
-  chassis.wait_drive();
-  chassis.set_turn_pid(60,TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(35, DRIVE_SPEED+17, true);
-  chassis.wait_drive();
-
-  intake.move_velocity(600);
-  pros::delay(1600);
-  intake.move_velocity(0);
-
-  piston1.set_value(false);
-  piston2.set_value(false);
-
-  chassis.set_drive_pid(-25, DRIVE_SPEED+17, true);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(225, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(-55, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(30, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(-30, DRIVE_SPEED, true);
-  chassis.wait_drive();
-}
-
-  void offence2(){
-  //diagonal start
-  //stops opposing robot from hitting shooting robot
-  chassis.set_drive_pid(-100, DRIVE_SPEED+ 17, true);
-  chassis.wait_drive();
-  chassis.set_drive_pid(70, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  chassis.set_drive_pid(-80,TURN_SPEED);
-  chassis.wait_drive();
-  // chassis.set_drive_pid(-40, DRIVE_SPEED, true);
-  // chassis.wait_drive();
-
-  // chassis.set_drive_pid(-106, DRIVE_SPEED + 17, true);
+  // pistonL.set_value(true);
+  // chassis.set_drive_pid(113, DRIVE_SPEED, false);
   // chassis.wait_drive();
 }
 
-void offence3(){
-  chassis.set_drive_pid(-95, DRIVE_SPEED+ 12, true);
+void defense2(){
+  chassis.set_drive_pid(-150, DRIVE_SPEED, true);
+}
+
+void offence1(){
+  chassis.set_turn_pid(30, TURN_SPEED);
   chassis.wait_drive();
-  chassis.set_drive_pid(89, DRIVE_SPEED, true);
+  chassis.set_drive_pid(-120, DRIVE_SPEED, true);
   chassis.wait_drive();
-  chassis.set_turn_pid(-140,TURN_SPEED);
+  chassis.set_turn_pid(32, TURN_SPEED);
+  chassis.wait_drive();
+  chassis.set_drive_pid(50, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  chassis.set_drive_pid(147, DRIVE_SPEED + 10, false);
-  intake.move(-120);
-  pros::delay(2000);
-  intake.move(0);
-  chassis.wait_drive();
-
-  chassis.set_turn_pid(-30,TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(60, DRIVE_SPEED, false);
-  chassis.wait_drive();
-  chassis.set_turn_pid(-75, TURN_SPEED);
-  chassis.wait_drive();
-  intake.move(120);
-  pros::delay(1500);
-  intake.move(0);
-  chassis.wait_drive();
- // chassis.reset_drive_sensor();
   chassis.set_drive_pid(-60, DRIVE_SPEED, true);
   chassis.wait_drive();
-  chassis.set_turn_pid(-165, TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(-115, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  chassis.set_turn_pid(-255, TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(-100, TURN_SPEED);
-  chassis.wait_drive();
-}
-
-void offence4(){
-  chassis.set_drive_pid(-100, DRIVE_SPEED+ 17, true);
-  chassis.wait_drive();
-  chassis.set_turn_pid(-15, TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(95, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  chassis.set_turn_pid(-66,TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(99, DRIVE_SPEED-10, false);
-  chassis.wait_drive();
-  // chassis.set_turn_pid(-95,TURN_SPEED);
-  // chassis.wait_drive();
 }
 
 void skills(){
+  chassis.set_turn_pid(-30, TURN_SPEED);
+  chassis.wait_drive();
   chassis.set_drive_pid(-105, DRIVE_SPEED+17, true);
   chassis.wait_drive();
   chassis.set_drive_pid(50, DRIVE_SPEED+10, true);
   chassis.wait_drive();
-  chassis.set_turn_pid(-80, TURN_SPEED);
+  chassis.set_turn_pid(95, TURN_SPEED);
   chassis.wait_drive();
-  chassis.set_drive_pid(-18, DRIVE_SPEED+10, true);
+  chassis.set_drive_pid(20, DRIVE_SPEED+10, true);
   pros::delay(500);
   //change 
   shooting.move(-100);
-  pros::delay(30000);
+  pros::delay(300);
   shooting.move(0);
 
-  chassis.set_turn_pid(-18, TURN_SPEED);
+  chassis.set_turn_pid(135, TURN_SPEED);
   chassis.wait_drive();
   chassis.set_drive_pid(55, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  chassis.set_turn_pid(-66, TURN_SPEED);
+  chassis.set_turn_pid(90, TURN_SPEED);
   chassis.wait_drive();
   chassis.set_drive_pid(260, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  chassis.set_turn_pid(50, TURN_SPEED);
+  chassis.set_turn_pid(45, TURN_SPEED);
   chassis.wait_drive();
-  piston1.set_value(true);
-  piston2.set_value(true);
-  chassis.set_drive_pid(-100, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  piston2.set_value(false);
-  chassis.set_drive_pid(90, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  chassis.set_turn_pid(47, TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(-85, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  chassis.set_drive_pid(50, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  piston1.set_value(false);
-  // chassis.set_drive_pid(90, DRIVE_SPEED, true);
-  // chassis.wait_drive();
+  // pistonR.set_value(true);
+  // pistonL.set_value(true);
+  chassis.set_drive_pid(-100, DRIVE_SPEED, false);
+  chassis.set_turn_pid(0, TURN_SPEED-50);
+//   chassis.wait_drive();
+//   chassis.set_turn_pid(47, TURN_SPEED);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(-85, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(50, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+//   pistonR.set_value(false);
+//   // chassis.set_drive_pid(90, DRIVE_SPEED, true);
+//   // chassis.wait_drive();
 
 
 
-  chassis.set_turn_pid(-40, TURN_SPEED);
-  chassis.wait_drive();
-  // // piston1.set_value(true);
-  // piston2.set_value(true);
-  // chassis.set_turn_pid()
-  // chassis.wait_turn();
-  // chassis.set_drive_pid();
-  // chassis.wait_drive();
-  piston1.set_value(true);
-  piston2.set_value(true);
-  chassis.set_drive_pid(-190, DRIVE_SPEED, true);
-  chassis.wait_drive();             
-  chassis.set_turn_pid(17, TURN_SPEED);
-  chassis.wait_drive(); 
-  chassis.set_drive_pid(-120, DRIVE_SPEED, true);
-  chassis.wait_drive();
+//   chassis.set_turn_pid(-40, TURN_SPEED);
+//   chassis.wait_drive();
+//   // // piston1.set_value(true);
+//   // piston2.set_value(true);
+//   // chassis.set_turn_pid()
+//   // chassis.wait_turn();
+//   // chassis.set_drive_pid();
+//   // chassis.wait_drive();
+//   pistonR.set_value(true);
+//   pistonL.set_value(true);
+//   chassis.set_drive_pid(-190, DRIVE_SPEED, true);
+//   chassis.wait_drive();             
+//   chassis.set_turn_pid(17, TURN_SPEED);
+//   chassis.wait_drive(); 
+//   chassis.set_drive_pid(-120, DRIVE_SPEED, true);
+//   chassis.wait_drive();
 
-  chassis.set_turn_pid(150, TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(-110, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  piston1.set_value(false);
-  piston2.set_value(false);
-  chassis.wait_drive();
+//   chassis.set_turn_pid(150, TURN_SPEED);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(-110, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+//   pistonR.set_value(false);
+//   pistonL.set_value(false);
+//   chassis.wait_drive();
   
-  chassis.set_turn_pid(90, TURN_SPEED);
-  chassis.wait_drive();
-  chassis.set_drive_pid(70, DRIVE_SPEED, false);
-  chassis.wait_drive();
-  chassis.set_turn_pid(110, TURN_SPEED);
-  chassis.wait_drive();
-  piston1.set_value(true);
-  piston2.set_value(true);
-  chassis.wait_drive();
-  chassis.set_drive_pid(-100, DRIVE_SPEED+17, true);
-  chassis.wait_drive();
-  chassis.set_drive_pid(70, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  chassis.set_drive_pid(-100, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  // chassis.set_drive_pid(-110, DRIVE_SPEED, true);
-  // chassis.wait_drive();
-  // piston2.set_value(false);
-  // chassis.set_turn_pid(45, TURN_SPEED);
-  // chassis.wait_drive();
-  // chassis.set_drive_pid(-170, DRIVE_SPEED+17, true);
-  // chassis.wait_drive();
-  // piston2.set_value(true);
-  // piston1.set_value(false);
-  // chassis.set_drive_pid(-30, TURN_SPEED-10, false);
-  // chassis.set_turn_pid(120, TURN_SPEED);
-  // chassis.wait_drive();
-  // chassis.set_drive_pid(-50, DRIVE_SPEED, true);
-  // chassis.wait_drive();
-  // chassis.set_turn_pid(200, TURN_SPEED);
-  // chassis.wait_drive();
-  // chassis.set_drive_pid(-50, DRIVE_SPEED+17, true);
-  // chassis.wait_drive();
+//   chassis.set_turn_pid(90, TURN_SPEED);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(70, DRIVE_SPEED, false);
+//   chassis.wait_drive();
+//   chassis.set_turn_pid(110, TURN_SPEED);
+//   chassis.wait_drive();
+//   pistonR.set_value(true);
+//   pistonL.set_value(true);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(-100, DRIVE_SPEED+17, true);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(70, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(-100, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+//   // chassis.set_drive_pid(-110, DRIVE_SPEED, true);
+//   // chassis.wait_drive();
+//   // piston2.set_value(false);
+//   // chassis.set_turn_pid(45, TURN_SPEED);
+//   // chassis.wait_drive();
+//   // chassis.set_drive_pid(-170, DRIVE_SPEED+17, true);
+//   // chassis.wait_drive();
+//   // piston2.set_value(true);
+//   // piston1.set_value(false);
+//   // chassis.set_drive_pid(-30, TURN_SPEED-10, false);
+//   // chassis.set_turn_pid(120, TURN_SPEED);
+//   // chassis.wait_drive();
+//   // chassis.set_drive_pid(-50, DRIVE_SPEED, true);
+//   // chassis.wait_drive();
+//   // chassis.set_turn_pid(200, TURN_SPEED);
+//   // chassis.wait_drive();
+//   // chassis.set_drive_pid(-50, DRIVE_SPEED+17, true);
+//   // chassis.wait_drive();
+// }
+
+// void defense3(){
+//   chassis.set_drive_pid(-104, DRIVE_SPEED + 10, true);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(35, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+//   chassis.set_turn_pid(83, TURN_SPEED);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(107, DRIVE_SPEED, true);
+//   intake.move_velocity(-100);
+//   pros::delay(1600);
+//   intake.move_velocity(0);
+//   chassis.set_turn_pid(-135, TURN_SPEED);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(77.5, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+//   // chassis.set_turn_pid(-232,TURN_SPEED);
+//   // chassis.wait_drive();
+//   // chassis.set_drive_pid(70, DRIVE_SPEED, true);
+//   // chassis.wait_drive();
+//   intake.move(100);
+//   pros::delay(1600);
+//   intake.move(0);
+//   //chassis.set_drive_pid(-, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+
 }
-  void cataTest(){
-    shooting.move(-100);
-    pros::delay(30000);
-    shooting.move_voltage(0);
-    // intake.move_velocity(-200);
-    // pros::delay(60000);
-    // intake.move_velocity(0);
-  }
+
+// void sixBallElevation(){
+//   //pick elevation triball and go back to pvc pipe
+//   intake.move(127);
+//   chassis.set_drive_pid(10, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+//   chassis.set_drive_pid(-10, DRIVE_SPEED, true);
+//   chassis.wait_drive();
+//   //turn around to get triball out of match load corner
+//   chassis.set_turn_pid();
+//   chassis.wait_drive();
+//   chassis.set_drive_pid();
+//   chasss.wait_drive();
+//   pistonR.set_value();
+
+// }

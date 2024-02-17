@@ -19,8 +19,8 @@ const int SWING_SPEED = 90;
   pros::Motor shooting (19);
   //pros::ADIDigitalIn limit (20);
   pros::ADIDigitalOut frontFlaps ('E');
-  pros::ADIDigitalOut backFlapsR ('B');
-  pros::ADIDigitalOut backFlapsL ('C');
+  pros::ADIDigitalOut bR ('B');
+  pros::ADIDigitalOut bL ('C');
   pros::ADIDigitalOut hangPiston ('A');
 
 ///
@@ -122,42 +122,40 @@ void defense1(){
   chassis.wait_drive();
   chassis.set_turn_pid(0, TURN_SPEED);
   chassis.wait_drive();
-  chassis.set_drive_pid(37, 60, true);
+  chassis.set_drive_pid(35, 60, true);
   chassis.wait_drive();
-  pros::delay(2000);
   //take out corner triball
   chassis.set_turn_pid(-42, TURN_SPEED);
   chassis.wait_drive();
+  bR.set_value(true);
   //pistonL.set_value(true);
   //pistonR.set_value(true);
-  chassis.wait_drive();
+  //chassis.wait_drive();
   chassis.set_drive_pid(40, DRIVE_SPEED, true);
   chassis.wait_drive();
-  chassis.set_turn_pid(-85, TURN_SPEED);
+  chassis.set_turn_pid(-90, TURN_SPEED);
   chassis.wait_drive();
+  bL.set_value(false);
   intake.move(-127);
-  chassis.set_drive_pid(124, DRIVE_SPEED, false);
+  chassis.set_drive_pid(125, DRIVE_SPEED, false);
   pros::delay(500);
   //pistonL.set_value(false);
   chassis.wait_drive();
-  
 }
 
-void offence1(){
+void farSide(){
 
+  chassis.set_turn_pid(30, TURN_SPEED);
+  chassis.wait_drive();
   chassis.set_drive_pid(-120, DRIVE_SPEED, true);
+  chassis.wait_drive();
+  chassis.set_turn_pid(32, TURN_SPEED);
+  chassis.wait_drive();
+  chassis.set_drive_pid(50, DRIVE_SPEED, true);
+  chassis.wait_drive();
 
-  // chassis.set_turn_pid(30, TURN_SPEED);
-  // chassis.wait_drive();
-  // chassis.set_drive_pid(-120, DRIVE_SPEED, true);
-  // chassis.wait_drive();
-  // chassis.set_turn_pid(32, TURN_SPEED);
-  // chassis.wait_drive();
-  // chassis.set_drive_pid(50, DRIVE_SPEED, true);
-  // chassis.wait_drive();
-
-  // chassis.set_drive_pid(-60, DRIVE_SPEED, true);
-  // chassis.wait_drive();
+  chassis.set_drive_pid(-60, DRIVE_SPEED, true);
+  chassis.wait_drive();
 }
 
 void skills(){
@@ -342,40 +340,42 @@ void skills2(){
 }
 
 void sixBallElevation(){
-  intake.move(127);
+  intake.move(-127);
   chassis.set_drive_pid(13, 127);
   chassis.wait_drive();
-  chassis.set_drive_pid(-85, 127);
+  chassis.set_drive_pid(-90, 127);
   chassis.wait_drive();
-  chassis.set_turn_pid(135, 127);
+  chassis.set_turn_pid(-45, 127);
   chassis.wait_drive();
-  // pistonL.set_value(true);
-  chassis.set_drive_pid(65, 100);
+  bL.set_value(true);
+  chassis.set_drive_pid(-70, 100);
   chassis.wait_drive();
-  chassis.set_turn_pid(105, 127);
+  chassis.set_turn_pid(-90, 127);
   chassis.wait_drive();
-  intake.move(-127);
+  // intake.move(127);
+  // pros::delay(200);
+  chassis.set_drive_pid(-55, 110);
+  chassis.wait_drive();
+  bL.set_value(false);
+  chassis.set_drive_pid(45, 127);
+  chassis.wait_drive();
+  chassis.set_turn_pid(90, 127);
+  chassis.wait_drive();
+  intake.move(127);
   pros::delay(200);
-  chassis.set_drive_pid(55, 110);
-  chassis.wait_drive();
-  // pistonL.set_value(false);
-  chassis.set_drive_pid(-45, 127);
-  chassis.wait_drive();
   chassis.set_drive_pid(55, 127);
   chassis.wait_drive();
   chassis.set_drive_pid(-50, 127);
   chassis.wait_drive();
   chassis.set_turn_pid(43, 127);
   chassis.wait_drive();
-  intake.move(127);
+  intake.move(-127);
   chassis.set_drive_pid(167, 127);
   chassis.wait_drive();
-  //chassis.set_drive_pid(17, 90);
-  //chassis.wait_drive();
   chassis.set_turn_pid(180, 110);
   chassis.wait_drive();
-  // pistonR.set_value(true);
-  intake.move(-127);
+  frontFlaps.set_value(true);
+  intake.move(127);
   chassis.set_drive_pid(100, 110);
   chassis.wait_drive();
 

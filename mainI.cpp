@@ -18,14 +18,14 @@
 Drive chassis (
   // Left Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
-  {-12, -16, -15}
+  {-7, -9, -8}
 
   // Right Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
-  ,{17, 19, 18}
+  ,{1, 2, 3}
 
   // IMU Port
-  ,20
+  ,21
 
   // Wheel Diameter (Remember, 4" wheels are actually 4.125!)
   //    (or tracking wheel diameter)
@@ -85,8 +85,13 @@ void initialize() {
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.add_autons({
     //Auton("Testing",singleMotorTest),
-    Auton("hahah", trial),
-    //Auton("Insert Faraz here", defense1)
+    //Auton("hahah", trial),
+    Auton("Insert Faraz here", offence1),
+    //Auton("Insert Faraz here", defense1),
+    //Auton("Losing weight be impossible when the best part about life is food", defense1),
+    //Auton("Insert Faraz here", skills2),
+    //Auton("ilutgjyhfd", skills2),
+    //Auton("Sid", sixBallElevation),
   });
 
   // Initialize chassis and auton selector
@@ -109,7 +114,7 @@ void disabled() {
 
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
- * Management System or the VEX Competition Switch. This is intended for
+ * Management System or the VEX Competition Switch. This is  intended for
  * competition-specific initialization routines, such as an autonomous selector
  * on the LCD.
  *
@@ -159,21 +164,20 @@ void autonomous() {
 void opcontrol() {
   // This is preference to what you like to drive on.
   //chassis.set_drive_brake(MOTOR_BRAKE_COAST);
-  pros::Motor intake (13, true);
-  pros::Motor shooting (11, true);
-  pros::ADIDigitalIn limit (20);
+  pros::Motor intake (20);
+  pros::Motor shooting (19);
+  //pros::ADIDigitalIn limit (20);
   pros::Controller controller (CONTROLLER_MASTER);
-  pros::ADIDigitalOut pistonR ('C');
-  pros::ADIDigitalOut pistonL ('B');
-  pros::ADIDigitalOut elevation ('A');
-  pros::ADIDigitalOut blocker ('D');
-
-  bool pressed = false;
-  int num = 1;
+  pros::ADIDigitalOut frontFlaps ('E');
+  pros::ADIDigitalOut backFlapsR ('B');
+  pros::ADIDigitalOut backFlapsL ('C');
+  pros::ADIDigitalOut hangPiston ('A');
 
   int time = pros::millis();
 
   while (true) {
+
+    hangPiston.set_value(true);
 
     // chassis.tank(); // Tank control
     chassis.arcade_standard(ez::SPLIT); // Standard split arcade
@@ -183,7 +187,8 @@ void opcontrol() {
     // Put more user control code here!
     // . . .
     //INTAKE
-    chassis.set_max_speed(100);
+
+    chassis.set_max_speed(127);
     if (controller.get_digital(DIGITAL_L1)){
       intake.move(127); //outtake
     } 
@@ -195,34 +200,43 @@ void opcontrol() {
     }
     //SHOOTING
     if (controller.get_digital(DIGITAL_R2)){
-      shooting.move(-100);
+      shooting.move(100);
     } else if (controller.get_digital(DIGITAL_R1)) {
       shooting.move(0);
     }
+    //HANG
+    if (controller.get_digital(DIGITAL_X)){
+      hangPiston.set_value(false);
+    }
   
-    //FLAPPER
+    //FRONTFLAPPER
     if(controller.get_digital(DIGITAL_UP)){
-      pistonR.set_value(true);
-      pistonL.set_value(true);
+      frontFlaps.set_value(true);
     }
     if(controller.get_digital(DIGITAL_DOWN)){
-      pistonR.set_value(false);
-      pistonL.set_value(false);
+      frontFlaps.set_value(false);
+    }
+    //BACKFLAPPER
+    if(controller.get_digital(DIGITAL_LEFT)){
+      backFlapsL.set_value(true);
+      backFlapsR.set_value(true);
+    }
+    if(controller.get_digital(DIGITAL_RIGHT)){
+      backFlapsR.set_value(false);
+      backFlapsL.set_value(false);
     }
     //ELEVATION
-      if(controller.get_digital(DIGITAL_A)){
-        if(time > 90000){
-      elevation.set_value(true);
-      }
-    }
+    //   if(controller.get_digital(DIGITAL_A)){
+    //   elevation.set_value(true);
+    // }
 
     //BLOCKER
-    if(controller.get_digital(DIGITAL_RIGHT)){
-      blocker.set_value(true);
-      }
-    if(controller.get_digital(DIGITAL_LEFT)){
-      blocker.set_value(false);
-      }
+    // if(controller.get_digital(DIGITAL_RIGHT)){
+    //   blocker.set_value(true);
+    //   }
+    // if(controller.get_digital(DIGITAL_LEFT)){
+    //   blocker.set_value(false);
+    //   }
 
     pros::delay(ez::util::DELAY_TIME); // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }

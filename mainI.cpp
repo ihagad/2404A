@@ -25,7 +25,7 @@ Drive chassis (
   ,{1, 2, 3}
 
   // IMU Port
-  ,21
+  ,11
 
   // Wheel Diameter (Remember, 4" wheels are actually 4.125!)
   //    (or tracking wheel diameter)
@@ -86,12 +86,12 @@ void initialize() {
   ez::as::auton_selector.add_autons({
     //Auton("Testing",singleMotorTest),
     //Auton("hahah", trial),
-    Auton("Insert Faraz here", offence1),
+    //Auton("Insert Faraz here", offence1),
     //Auton("Insert Faraz here", defense1),
     //Auton("Losing weight be impossible when the best part about life is food", defense1),
     //Auton("Insert Faraz here", skills2),
     //Auton("ilutgjyhfd", skills2),
-    //Auton("Sid", sixBallElevation),
+    Auton("Sid", sixBallElevation),
   });
 
   // Initialize chassis and auton selector
@@ -200,7 +200,7 @@ void opcontrol() {
     }
     //SHOOTING
     if (controller.get_digital(DIGITAL_R2)){
-      shooting.move(100);
+      shooting.move(80);
     } else if (controller.get_digital(DIGITAL_R1)) {
       shooting.move(0);
     }
